@@ -9,7 +9,7 @@ function RegisterForm({ setToken }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${process.env.REACT_APP_AUTH_API_URL}`, {
+      const response = await fetch(`${"http://localhost:8000/auth/register"}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
