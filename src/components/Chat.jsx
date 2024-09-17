@@ -6,7 +6,7 @@ function Chat({ token }) {
 
   const sendMessage = async () => {
     try {
-      const response = await fetch('http://localhost:8000/chat/sendMessage', {
+      const res = await fetch(`${process.env.REACT_APP_CHAT_API_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -14,8 +14,8 @@ function Chat({ token }) {
         },
         body: JSON.stringify({ content: message }),
       });
-      const data = await response.json();
-      if (response.ok) {
+      const data = await res.json();
+      if (res.ok) {
         setResponse(data.content);
       } else {
         alert('Failed to send message: ' + data.detail);
