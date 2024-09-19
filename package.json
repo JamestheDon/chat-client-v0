@@ -35,5 +35,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "https://azcontainerregistryxyz.azurecr.io:80" 
+  "proxy": "http://localhost:80" 
 }
