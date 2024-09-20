@@ -12,7 +12,8 @@
     "react-markdown": "^8.0.6",
     "react-scripts": "5.0.1",
     "react-textarea-autosize": "^8.5.3",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "axios": "^1.7.2"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -38,5 +39,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:8000"
+  "proxy": "http://0.0.0.0:8000"
 }
