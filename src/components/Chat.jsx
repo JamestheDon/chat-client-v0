@@ -49,7 +49,7 @@ function Chat({ token }) {
       console.log('Sending message to server:', message);
       const response = await axios({
         method: 'post',
-        url: 'http://localhost:8000/chat/sendMessage',
+        url: `${process.env.REACT_APP_CHAT_API_URL}`,
         data: { content: message },
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -70,6 +70,7 @@ function Chat({ token }) {
       for (const line of lines) {
         if (line.startsWith('data: ')) {
           const content = line.slice(6); // Remove 'data: ' prefix
+          console.log('Received content:', line);
           if (content === '[END]') {
             break; // Stop processing when we reach the end marker
           }
