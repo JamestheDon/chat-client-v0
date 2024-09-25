@@ -39,9 +39,5 @@
       "last 1 safari version"
     ]
   },
-<<<<<<< HEAD
   "proxy": "http://localhost:8000"
-=======
-  "proxy": "https://azcontainerregistryxyz.azurecr.io:80" 
->>>>>>> fdbb303 (base azure deploy. not working.)
 }

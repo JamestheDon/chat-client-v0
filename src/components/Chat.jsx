@@ -39,23 +39,18 @@ function Chat({ token }) {
   const sendMessage = async () => {
     if (!message.trim()) return;
 
-    const newMessage = { role: 'user', content: message };
+    const newMessage = { role: 'user', content: message.trim() };
     setMessages(prevMessages => [...prevMessages, newMessage, { role: 'assistant', content: '', isComplete: false, isThinking: true }]);
     setMessage('');
     setIsTyping(true);
 
     try {
-<<<<<<< HEAD
       const token = localStorage.getItem('token'); // Retrieve token from localStorage
       console.log('Sending message to server:', message);
       const response = await axios({
         method: 'post',
         url: `${process.env.REACT_APP_CHAT_API_URL}`,
         data: { content: message },
-=======
-      const res = await fetch(`${process.env.REACT_APP_CHAT_API_URL}`, {
-        method: 'POST',
->>>>>>> fdbb303 (base azure deploy. not working.)
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -74,13 +69,13 @@ function Chat({ token }) {
 
       for (const line of lines) {
         if (line.startsWith('data: ')) {
-          const content = line.slice(6); // Remove 'data: ' prefix
-          console.log('Received content:', line);
+          const content = line.slice(6).trim(); // Remove 'data: ' prefix and trim
+          console.log('Received content:', content);
           if (content === '[END]') {
             break; // Stop processing when we reach the end marker
           }
-          fullContent += content;
           await new Promise(resolve => setTimeout(resolve, typingSpeed));
+          fullContent += (fullContent ? ' ' : '') + content;
           setMessages(prevMessages => {
             const newMessages = [...prevMessages];
             newMessages[newMessages.length - 1].content = fullContent;

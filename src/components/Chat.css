@@ -14,24 +14,34 @@
 
 .message {
   max-width: 70%;
-  margin-bottom: 15px;
-  padding: 10px;
-  border-radius: 8px;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  border-radius: 14px;
   word-wrap: break-word;
   display: inline-block;
+  box-sizing: border-box;
+  line-height: 1.3;
+  font-size: 0.9em;
+  word-spacing: -0.05em; /* Reduce space between words */
+  letter-spacing: -0.01em;
 }
 
 .message.user {
   align-self: flex-end;
-  background-color: #007bff;  /* Blue color for user messages */
+  background-color: #007bff;
   color: white;
   margin-left: auto;
 }
 
 .message.assistant {
   align-self: flex-start;
-  background-color: #f0f0f0;  /* Light gray for assistant messages */
+  background-color: #f0f0f0;
   color: black;
+  padding: 4px 8px;
+  font-size: 0.8em;
+  line-height: 1.2;
+  border-radius: 10px;
+  max-width: 60%;
 }
 
 .thinking {
