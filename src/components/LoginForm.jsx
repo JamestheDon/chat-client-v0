@@ -7,7 +7,7 @@ function LoginForm({ setToken }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${"http://localhost:8000/auth/token"}`, {
+      const response = await fetch(`${process.env.REACT_APP_AUTH_API_TOKEN_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
