@@ -1,9 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Send } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify'; // For sanitizing HTML
+import hljs from 'highlight.js'; // Import the full build
+import 'highlight.js/styles/github-dark.css'; // or any other style you prefer
 import './Chat.css';
-import axios from 'axios';  // Add this import
+
+
+// Configure marked options to use highlight.js
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+  headerIds: false,
+  mangle: false,
+  langPrefix: 'hljs language-',
+  highlight: function(code, lang) {
+    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+    return hljs.highlight(code, { language }).value;
+  }
+});
 
 function Chat({ token }) {
   const [message, setMessage] = useState('');
@@ -39,54 +55,71 @@ function Chat({ token }) {
   const sendMessage = async () => {
     if (!message.trim()) return;
 
+    setIsTyping(true);
     const newMessage = { role: 'user', content: message.trim() };
     setMessages(prevMessages => [...prevMessages, newMessage, { role: 'assistant', content: '', isComplete: false, isThinking: true }]);
-    setMessage('');
-    setIsTyping(true);
+    setMessage(''); // Clear the textarea
 
     try {
       const token = localStorage.getItem('token'); // Retrieve token from localStorage
       console.log('Sending message to server:', message);
-      const response = await axios({
-        method: 'post',
-        url: `${process.env.REACT_APP_CHAT_API_URL}`,
-        data: { content: message },
+      const response = await fetch(`${process.env.REACT_APP_CHAT_API_URL}`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        responseType: 'text',
+        body: JSON.stringify({ content: message })
       });
 
-      const lines = response.data.split('\n');
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
       let fullContent = '';
-      
+
       setMessages(prevMessages => {
         const newMessages = [...prevMessages];
         newMessages[newMessages.length - 1].isThinking = false;
         return newMessages;
       });
 
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const content = line.slice(6).trim(); // Remove 'data: ' prefix and trim
-          console.log('Received content:', content);
-          if (content === '[END]') {
-            break; // Stop processing when we reach the end marker
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        
+        for (const line of lines) {
+          if (line.trim().startsWith('data:')) {
+            const jsonStr = line.replace(/^data:/, '').trim();
+            try {
+              const data = JSON.parse(jsonStr);
+              if (data.type === 'content') {
+                console.log('Received content:', data.text);
+                fullContent += data.text;
+                setMessages(prevMessages => {
+                  const newMessages = [...prevMessages];
+                  newMessages[newMessages.length - 1].content = fullContent;
+                  return newMessages;
+                });
+                await new Promise(resolve => setTimeout(resolve, typingSpeed));
+              } else if (data.type === 'end') {
+                console.log('Stream ended');
+                break;
+              }
+            } catch (error) {
+              console.error('Error parsing JSON:', error, 'Raw data:', jsonStr);
+            }
           }
-          await new Promise(resolve => setTimeout(resolve, typingSpeed));
-          fullContent += (fullContent ? ' ' : '') + content;
-          setMessages(prevMessages => {
-            const newMessages = [...prevMessages];
-            newMessages[newMessages.length - 1].content = fullContent;
-            return newMessages;
-          });
         }
       }
 
       // Mark the message as complete
       setMessages(prevMessages => {
         const newMessages = [...prevMessages];
+        newMessages[newMessages.length - 1].content = fullContent;
         newMessages[newMessages.length - 1].isComplete = true;
         return newMessages;
       });
@@ -100,6 +133,51 @@ function Chat({ token }) {
         console.log('Unauthorized access. Please log in again.');
       }
       setIsTyping(false);
+      setMessages(prevMessages => {
+        const newMessages = [...prevMessages];
+        newMessages[newMessages.length - 1].isThinking = false;
+        newMessages[newMessages.length - 1].content = "An error occurred. Please try again.";
+        return newMessages;
+      });
+    }
+  };
+
+  const applyHighlighting = (html) => {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    
+    tempDiv.querySelectorAll('pre code').forEach((block) => {
+      hljs.highlightElement(block);
+    });
+    
+    return tempDiv.innerHTML;
+  };
+
+  const renderMessage = (msg) => {
+    if (msg.role === 'assistant') {
+      console.log('Rendering assistant message:', msg);
+      if (msg.isThinking) {
+       // console.log('Rendering thinking spinner');
+        return (
+          <div className="thinking">
+            <div className="spinner"></div>
+          </div>
+        );
+      }
+      try {
+        const rawMarkup = marked(msg.content);
+       // console.log('Marked parsing complete');
+        
+        const highlightedMarkup = applyHighlighting(rawMarkup);
+        //console.log('Highlighting applied');
+        
+        return <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(highlightedMarkup) }} />;
+      } catch (error) {
+        console.error('Error in message rendering:', error);
+        return <div>{msg.content}</div>; // Fallback to rendering plain text
+      }
+    } else {
+      return msg.content;
     }
   };
 
@@ -107,20 +185,8 @@ function Chat({ token }) {
     <div className="chat-container">
       <div className="chat-messages" ref={chatContainerRef}>
         {messages.map((msg, index) => (
-          <div key={index} className={`message ${msg.role}`}>
-            {msg.role === 'assistant' ? (
-              msg.isThinking ? (
-                <div className="thinking">
-                  <div className="spinner"></div>
-                </div>
-              ) : msg.isComplete ? (
-                <ReactMarkdown>{msg.content}</ReactMarkdown>
-              ) : (
-                <div className="typing-effect">{msg.content}</div>
-              )
-            ) : (
-              msg.content
-            )}
+          <div key={`${index}-${msg.isThinking}`} className={`message ${msg.role} ${msg.isThinking ? 'thinking-message' : ''}`}>
+            {renderMessage(msg)}
           </div>
         ))}
       </div>
