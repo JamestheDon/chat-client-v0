@@ -14,15 +14,14 @@
 
 .message {
   max-width: 70%;
-  margin-bottom: 8px;
-  border-radius: 18px;
+  margin-bottom: 4px;
+  padding: 6px 8px;
+  border-radius: 14px;
   word-wrap: break-word;
+  display: inline-block;
   box-sizing: border-box;
+  line-height: 1.2;
   font-size: 0.9em;
-  min-height: 36px;
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
 }
 
 .message.user {
@@ -36,29 +35,12 @@
   align-self: flex-start;
   background-color: #f0f0f0;
   color: black;
-  padding-top: 6px;  /* Reduced top padding */
-  padding-bottom: 10px;  /* Slightly increased bottom padding */
+  white-space: pre-wrap;
 }
 
-.message.user > *,
 .message.assistant > * {
   margin: 0;
   padding: 0;
-  line-height: 1.2;  /* Slightly reduced line height */
-}
-
-/* Add more space between user and assistant messages */
-.message.user + .message.assistant,
-.message.assistant + .message.user {
-  margin-top: 16px;
-}
-
-/* Adjust content alignment within messages */
-.message.assistant > *,
-.message.user > * {
-  margin: 0;
-  padding: 0;
-  align-self: center; /* Center content vertically */
 }
 
 .message.assistant p,
@@ -90,15 +72,10 @@
 }
 
 .thinking {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: inline-block;
   background-color: #f0f0f0;
-  padding: 8px;
-  border-radius: 16px;
-  width: 40px;
-  height: 40px;
-  margin-bottom: 8px;
+  padding: 10px;
+  border-radius: 18px;
 }
 
 .spinner {
@@ -115,11 +92,6 @@
   100% { transform: rotate(360deg); }
 }
 
-.thinking-message {
-  align-self: flex-start;
-  background-color: transparent !important;
-}
-
 /* Code block styles */
 .message.assistant pre {
   background-color: #282c34;
@@ -131,6 +103,46 @@
 
 .message.assistant pre code {
   color: #abb2bf;
+}
+
+/* Syntax highlighting */
+.message.assistant pre code .hljs-keyword,
+.message.assistant pre code .hljs-selector-tag,
+.message.assistant pre code .hljs-built_in,
+.message.assistant pre code .hljs-name,
+.message.assistant pre code .hljs-tag {
+  color: #569cd6;
+}
+
+.message.assistant pre code .hljs-string,
+.message.assistant pre code .hljs-title,
+.message.assistant pre code .hljs-section,
+.message.assistant pre code .hljs-attribute,
+.message.assistant pre code .hljs-literal,
+.message.assistant pre code .hljs-template-tag,
+.message.assistant pre code .hljs-template-variable,
+.message.assistant pre code .hljs-type,
+.message.assistant pre code .hljs-addition {
+  color: #ce9178;
+}
+
+.message.assistant pre code .hljs-comment,
+.message.assistant pre code .hljs-quote,
+.message.assistant pre code .hljs-deletion,
+.message.assistant pre code .hljs-meta {
+  color: #6a9955;
+}
+
+.message.assistant pre code .hljs-keyword,
+.message.assistant pre code .hljs-selector-tag,
+.message.assistant pre code .hljs-literal,
+.message.assistant pre code .hljs-title,
+.message.assistant pre code .hljs-section,
+.message.assistant pre code .hljs-doctag,
+.message.assistant pre code .hljs-type,
+.message.assistant pre code .hljs-name,
+.message.assistant pre code .hljs-strong {
+  font-weight: bold;
 }
 
 /* Inline code styles */
