@@ -35,7 +35,7 @@
   align-self: flex-start;
   background-color: #f0f0f0;
   color: black;
-  white-space: pre-wrap;
+  white-space: normal;
 }
 
 .message.assistant > * {
@@ -94,15 +94,18 @@
 
 /* Code block styles */
 .message.assistant pre {
-  background-color: #282c34;
-  border-radius: 4px;
-  padding: 1em;
-  overflow-x: auto;
-  margin: 0.5em 0;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .message.assistant pre code {
+  display: block;
+  overflow-x: auto;
+  padding: 1em;
+  background: #282c34;
   color: #abb2bf;
+  text-align: left;
 }
 
 /* Syntax highlighting */
