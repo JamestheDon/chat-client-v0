@@ -36,11 +36,13 @@
   background-color: #f0f0f0;
   color: black;
   white-space: normal;
+  text-align: left; /* Add this line */
 }
 
 .message.assistant > * {
   margin: 0;
   padding: 0;
+  text-align: left; /* Add this line */
 }
 
 .message.assistant p,
@@ -55,6 +57,7 @@
 .message.assistant blockquote,
 .message.assistant pre,
 .message.assistant table {
+  text-align: left;
   margin-bottom: 0.5em;
 }
 
