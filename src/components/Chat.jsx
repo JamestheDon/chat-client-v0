@@ -57,11 +57,14 @@ function Chat({ token }) {
 
     setIsTyping(true);
     const newMessage = { role: 'user', content: message.trim() };
-    setMessages(prevMessages => [...prevMessages, newMessage, { role: 'assistant', content: '', isComplete: false, isThinking: true }]);
+    setMessages(prevMessages => [...prevMessages, newMessage]);
     setMessage(''); // Clear the textarea
 
+    // Add this line to immediately show the thinking state
+    setMessages(prevMessages => [...prevMessages, { role: 'assistant', content: '', isComplete: false, isThinking: true }]);
+
     try {
-      const token = localStorage.getItem('token'); // Retrieve token from localStorage
+      const token = localStorage.getItem('token');
       console.log('Sending message to server:', message);
       const response = await fetch(`${process.env.REACT_APP_CHAT_API_URL}`, {
         method: 'POST',
@@ -77,12 +80,7 @@ function Chat({ token }) {
       let buffer = '';
       let fullContent = '';
 
-      setMessages(prevMessages => {
-        const newMessages = [...prevMessages];
-        newMessages[newMessages.length - 1].isThinking = false;
-        return newMessages;
-      });
-
+      let isFirstChunk = true;
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -101,7 +99,12 @@ function Chat({ token }) {
                 fullContent += data.text;
                 setMessages(prevMessages => {
                   const newMessages = [...prevMessages];
-                  newMessages[newMessages.length - 1].content = fullContent;
+                  const lastMessage = newMessages[newMessages.length - 1];
+                  if (isFirstChunk) {
+                    lastMessage.isThinking = false;
+                    isFirstChunk = false;
+                  }
+                  lastMessage.content = fullContent;
                   return newMessages;
                 });
                 await new Promise(resolve => setTimeout(resolve, typingSpeed));
@@ -157,7 +160,6 @@ function Chat({ token }) {
     if (msg.role === 'assistant') {
       console.log('Rendering assistant message:', msg);
       if (msg.isThinking) {
-       // console.log('Rendering thinking spinner');
         return (
           <div className="thinking">
             <div className="spinner"></div>
@@ -166,11 +168,7 @@ function Chat({ token }) {
       }
       try {
         const rawMarkup = marked(msg.content);
-       // console.log('Marked parsing complete');
-        
         const highlightedMarkup = applyHighlighting(rawMarkup);
-        //console.log('Highlighting applied');
-        
         return <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(highlightedMarkup) }} />;
       } catch (error) {
         console.error('Error in message rendering:', error);
